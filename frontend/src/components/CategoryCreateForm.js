@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function CategoryCreateForm({ onCategoryCreated }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [refresh, setRefresh] = useState(false);
+
+  // Fetch categories
+  useEffect(() => {
+    fetch('http://localhost/backend/api/categories.php')
+      .then(res => res.json())
+      .then(data => setCategories(data));
+  }, [success, refresh]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,28 +40,57 @@ function CategoryCreateForm({ onCategoryCreated }) {
     }
   };
 
+  // Delete category
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this category?')) return;
+    await fetch('http://localhost/backend/api/delete_category.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ id }),
+    });
+    setSuccess('Category deleted!');
+    setRefresh(r => !r); // Refresh the list
+  };
+
   return (
-    <form onSubmit={handleSubmit} style={{marginBottom: 20}}>
-      <h2>Create Category</h2>
-      <input
-        type="text"
-        placeholder="Category Name"
-        value={name}
-        onChange={e => setName(e.target.value)}
-        required
-        style={{width: '100%', marginBottom: 8}}
-      /><br />
-      <textarea
-        placeholder="Description"
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-        rows={2}
-        style={{width: '100%', marginBottom: 8}}
-      /><br />
-      <button type="submit">Create Category</button>
-      {error && <div style={{color: 'red'}}>{error}</div>}
-      {success && <div style={{color: 'green'}}>{success}</div>}
-    </form>
+    <div className="card">
+      <h2>Categories</h2>
+      <form onSubmit={handleSubmit} style={{marginBottom: 20}}>
+        <input
+          type="text"
+          placeholder="Category Name"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Description"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+        />
+        <button type="submit">Create Category</button>
+        {error && <div className="auth-error">{error}</div>}
+        {success && <div className="auth-success">{success}</div>}
+      </form>
+      <ul style={{padding: 0, listStyle: 'none'}}>
+        {categories.map(cat => (
+          <li key={cat.id} style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, background: '#f7faff', borderRadius: 6, padding: '8px 12px'}}>
+            <span>
+              <b>{cat.name}</b> {cat.description && <span style={{color: '#888'}}>({cat.description})</span>}
+            </span>
+            <button
+              className="logout-btn"
+              style={{padding: '6px 14px', fontSize: '0.95em'}}
+              onClick={() => handleDelete(cat.id)}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

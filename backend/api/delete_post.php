@@ -23,6 +23,15 @@ if (!$id) {
     exit;
 }
 
+// Delete all comments for this post
+$stmt = $pdo->prepare("DELETE FROM comments WHERE post_id=?");
+$stmt->execute([$id]);
+
+// Delete all post_tags for this post
+$stmt = $pdo->prepare("DELETE FROM post_tags WHERE post_id=?");
+$stmt->execute([$id]);
+
+// Now delete the post itself
 $stmt = $pdo->prepare("DELETE FROM posts WHERE id=?");
 $stmt->execute([$id]);
 

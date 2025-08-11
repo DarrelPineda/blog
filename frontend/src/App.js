@@ -2,12 +2,20 @@ import React, { useState } from 'react';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
 import PostList from './components/PostList';
-import TabbedDashboard from './components/TabbedDashboard'; // Import the tabbed dashboard
+import TabbedDashboard from './components/TabbedDashboard';
+import PostCreateForm from './components/PostCreateForm';
+import CategoryCreateForm from './components/CategoryCreateForm';
+import TagCreateForm from './components/TagCreateForm';
 import './App.css';
+
+import { FaTachometerAlt, FaPlus, FaFileAlt, FaFolderOpen, FaTags } from 'react-icons/fa';
+import { BiColor } from 'react-icons/bi';
+import { GiWhiteBook } from 'react-icons/gi';
 
 function App() {
   const [showLogin, setShowLogin] = useState(true);
   const [userRole, setUserRole] = useState(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [refreshPosts, setRefreshPosts] = useState(false);
   const [refreshCategories, setRefreshCategories] = useState(false);
   const [refreshTags, setRefreshTags] = useState(false);
@@ -21,67 +29,90 @@ function App() {
     setShowLogin(true);
   };
 
-  const handlePostCreated = () => {
-    setRefreshPosts(!refreshPosts);
-  };
+  const handlePostCreated = () => setRefreshPosts(!refreshPosts);
+  const handleCategoryCreated = () => setRefreshCategories(!refreshCategories);
+  const handleTagCreated = () => setRefreshTags(!refreshTags);
 
-  const handleCategoryCreated = () => {
-    setRefreshCategories(!refreshCategories);
-  };
-
-  const handleTagCreated = () => {
-    setRefreshTags(!refreshTags);
-  };
-
-  if (userRole) {
+  // --- Reader View: Only show posts ---
+  if (userRole === 'reader') {
     return (
-      <div style={{
-        maxWidth: 900,
-        margin: '40px auto',
-        padding: 20,
-        border: '1px solid #ccc',
-        borderRadius: 8,
-        background: '#fff'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 20
-        }}>
-          <h1>Welcome! You are logged in as <b>{userRole}</b></h1>
-          <button onClick={handleLogout} className="logout-btn">
-            Logout
-          </button>
-        </div>
-        {(userRole === 'admin' || userRole === 'author') && (
-          <TabbedDashboard
-            onPostCreated={handlePostCreated}
-            onCategoryCreated={handleCategoryCreated}
-            onTagCreated={handleTagCreated}
-            refreshCategories={refreshCategories}
-            refreshTags={refreshTags}
-          />
-        )}
-        {/* Pass userRole to PostList for edit/delete buttons */}
-        <PostList key={refreshPosts} userRole={userRole} />
+      <div className="app-container">
+        <header className="app-header">
+          <h1 style={{margin: 0}}>Blogify CMS <b>reader</b></h1>
+          <button onClick={handleLogout} className="logout-btn">Logout</button>
+        </header>
+        <main className="main-content" style={{marginLeft: 0}}>
+          <PostList userRole={userRole} />
+        </main>
       </div>
     );
   }
 
+  // --- Admin/Author View: Full dashboard and sidebar ---
+  if (userRole === 'admin' || userRole === 'author') {
+    return (
+      <div className="app-container">
+        <header className="app-header">
+          <h1 style={{margin: 0}} >Blogify CMS <b>{userRole}</b></h1>
+          <button onClick={handleLogout} className="logout-btn">Logout</button>
+        </header>
+        <nav className="sidebar">
+          <ul>
+            <li className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}>
+              <FaTachometerAlt style={{marginRight: 8}} /> Dashboard
+            </li>
+            <li className={activeTab === 'createpost' ? 'active' : ''} onClick={() => setActiveTab('createpost')}>
+              <FaPlus style={{marginRight: 8}} /> Create Post
+            </li>
+            <li className={activeTab === 'categories' ? 'active' : ''} onClick={() => setActiveTab('categories')}>
+              <FaFolderOpen style={{marginRight: 8}} /> Categories
+            </li>
+            <li className={activeTab === 'tags' ? 'active' : ''} onClick={() => setActiveTab('tags')}>
+              <FaTags style={{marginRight: 8}} /> Tags
+            </li>
+            <li className={activeTab === 'posts' ? 'active' : ''} onClick={() => setActiveTab('posts')}>
+              <FaFileAlt style={{marginRight: 8}} /> Posts
+            </li>
+          </ul>
+        </nav>
+        <main className="main-content">
+          {activeTab === 'dashboard' && (
+            <TabbedDashboard
+              onPostCreated={handlePostCreated}
+              onCategoryCreated={handleCategoryCreated}
+              onTagCreated={handleTagCreated}
+              refreshCategories={refreshCategories}
+              refreshTags={refreshTags}
+            />
+          )}
+          {activeTab === 'createpost' && (
+            <PostCreateForm
+              onPostCreated={handlePostCreated}
+              refreshCategories={refreshCategories}
+              refreshTags={refreshTags}
+            />
+          )}
+          {activeTab === 'categories' && (
+            <CategoryCreateForm onCategoryCreated={handleCategoryCreated} />
+          )}
+          {activeTab === 'tags' && (
+            <TagCreateForm onTagCreated={handleTagCreated} />
+          )}
+          {activeTab === 'posts' && (
+            <PostList key={refreshPosts} userRole={userRole} />
+          )}
+        </main>
+      </div>
+    );
+  }
+
+  // --- Login/Register View ---
   return (
-    <div style={{
-      maxWidth: 400,
-      margin: '40px auto',
-      padding: 20,
-      border: '1px solid #ccc',
-      borderRadius: 8,
-      background: '#fff'
-    }}>
+    <div className="auth-container">
       {showLogin ? (
         <>
           <LoginForm onLogin={setUserRole} />
-          <p>
+          <p className="auth-switch">
             Don't have an account?{' '}
             <button onClick={() => setShowLogin(false)}>Register</button>
           </p>
@@ -89,7 +120,7 @@ function App() {
       ) : (
         <>
           <RegisterForm onRegister={() => setShowLogin(true)} />
-          <p>
+          <p className="auth-switch">
             Already have an account?{' '}
             <button onClick={() => setShowLogin(true)}>Login</button>
           </p>

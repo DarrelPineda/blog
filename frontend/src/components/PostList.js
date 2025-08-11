@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import CommentList from './CommentList';
 
 function PostList({ userRole }) {
   const [posts, setPosts] = useState([]);
@@ -108,6 +109,8 @@ function PostList({ userRole }) {
                   <button onClick={() => handleDelete(post.id)} style={{color: '#fff', background: '#ff4d4f', border: 'none', padding: '6px 16px', borderRadius: 4}}>Delete</button>
                 </div>
               )}
+              {/* Show comments under each post */}
+              <CommentList postId={post.id} />
             </>
           )}
         </div>
@@ -165,6 +168,8 @@ function PostList({ userRole }) {
                     <button onClick={() => startEdit(post)} style={{marginRight: 8}}>Edit</button>
                     <button onClick={() => handleDelete(post.id)} style={{color: '#fff', background: '#ff4d4f', border: 'none', padding: '6px 16px', borderRadius: 4}}>Delete</button>
                   </div>
+                  {/* Show comments under each draft post */}
+                  <CommentList postId={post.id} />
                 </>
               )}
             </div>

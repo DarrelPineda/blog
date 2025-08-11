@@ -12,7 +12,7 @@ function LoginForm({ onLogin }) {
       const res = await fetch('http://localhost/backend/api/login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // for session cookies
+        credentials: 'include',
         body: JSON.stringify({ username, password }),
       });
       const data = await res.json();
@@ -27,25 +27,30 @@ function LoginForm({ onLogin }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Login</h2>
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={e => setUsername(e.target.value)}
-        required
-      /><br />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-        required
-      /><br />
-      <button type="submit">Login</button>
-      {error && <div style={{color: 'red'}}>{error}</div>}
-    </form>
+    <div className="auth-container">
+      <div className="auth-title">Blogify CMS</div>
+      <div className="auth-tagline">
+        Welcome! Please log in to your account.
+      </div>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Login</button>
+        {error && <div className="auth-error">{error}</div>}
+      </form>
+    </div>
   );
 }
 
